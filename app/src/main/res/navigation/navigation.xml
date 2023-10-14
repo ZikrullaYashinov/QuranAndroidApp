@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="zikrulla.production.quranapp.ui.splash.SplashFragment"
+        android:label="SplashFragment" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="zikrulla.production.quranapp.ui.home.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/surahDetailsFragment"
+        android:name="zikrulla.production.quranapp.ui.surahdetails.SurahDetailsFragment"
+        android:label="fragment_surah_detaails"
+        tools:layout="@layout/fragment_surah_detaails" />
+</navigation>
