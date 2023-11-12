@@ -7,11 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import zikrulla.production.quranapp.db.AppDatabase
-import zikrulla.production.quranapp.db.dao.AyahUzArDao
-import zikrulla.production.quranapp.db.dao.SurahDao
-import zikrulla.production.quranapp.networking.ApiService
+import zikrulla.production.quranapp.data.local.database.AppDatabase
 import javax.inject.Singleton
 
 @Module

@@ -7,16 +7,16 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="zikrulla.production.quranapp.ui.splash.SplashFragment"
+        android:name="zikrulla.production.quranapp.ui.screen.splash.SplashFragment"
         android:label="SplashFragment" />
     <fragment
         android:id="@+id/homeFragment"
-        android:name="zikrulla.production.quranapp.ui.home.HomeFragment"
+        android:name="zikrulla.production.quranapp.ui.screen.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/surahDetailsFragment"
-        android:name="zikrulla.production.quranapp.ui.surahdetails.SurahDetailsFragment"
+        android:name="zikrulla.production.quranapp.ui.screen.surahdetails.SurahDetailsFragment"
         android:label="fragment_surah_detaails"
         tools:layout="@layout/fragment_surah_detaails" />
 </navigation>
