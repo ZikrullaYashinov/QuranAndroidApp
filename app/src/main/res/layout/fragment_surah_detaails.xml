@@ -24,10 +24,10 @@
 
                 <ImageView
                     android:id="@+id/back"
-                    android:layout_width="@dimen/_20sdp"
-                    android:layout_height="@dimen/_20sdp"
+                    android:layout_width="@dimen/_32sdp"
+                    android:layout_height="@dimen/_32sdp"
                     android:foreground="?attr/selectableItemBackground"
-                    android:padding="@dimen/_2sdp"
+                    android:padding="@dimen/_6sdp"
                     android:src="@drawable/ic_back"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -104,128 +104,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-<!--            <androidx.core.widget.NestedScrollView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent">-->
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/_10sdp"
-                        android:background="@drawable/bg_card"
-                        android:padding="@dimen/_10sdp">
-
-                        <ImageView
-                            android:id="@+id/background_image"
-                            android:layout_width="@dimen/_150sdp"
-                            android:layout_height="@dimen/_150sdp"
-                            android:alpha="0.1"
-                            android:src="@drawable/ic_quran"
-                            app:layout_constraintRight_toRightOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_bias="0.5">
-
-                            <TextView
-                                android:id="@+id/surah_name"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/_10sdp"
-                                android:fontFamily="@font/poppins_medium"
-                                android:textColor="@color/white"
-                                android:textSize="@dimen/_18sdp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintRight_toRightOf="parent"
-                                app:layout_constraintTop_toTopOf="@id/imageView"
-                                tools:text="Al-Fatiah" />
-
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:layout_marginStart="@dimen/_40sdp"
-                                android:layout_marginEnd="@dimen/_40sdp"
-                                android:background="@color/background2" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/_10sdp"
-                                android:gravity="center">
-
-                                <TextView
-                                    android:id="@+id/surah_revelation_type"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="@dimen/_10sdp"
-                                    android:fontFamily="@font/poppins_medium"
-                                    android:textAllCaps="true"
-                                    android:textColor="@color/white"
-                                    android:textSize="@dimen/_10sdp"
-                                    tools:text="Meccan" />
-
-                                <androidx.cardview.widget.CardView
-                                    android:id="@+id/view"
-                                    android:layout_width="@dimen/_4sdp"
-                                    android:layout_height="@dimen/_4sdp"
-                                    android:layout_marginStart="@dimen/_5sdp"
-                                    app:cardBackgroundColor="@color/white"
-                                    app:layout_constraintBottom_toBottomOf="@id/surah_revelation_type"
-                                    app:layout_constraintLeft_toRightOf="@id/surah_revelation_type"
-                                    app:layout_constraintTop_toTopOf="@id/surah_revelation_type" />
-
-                                <TextView
-                                    android:id="@+id/surah_number_of_ayahs"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="@dimen/_5sdp"
-                                    android:fontFamily="@font/poppins_medium"
-                                    android:textAllCaps="true"
-                                    android:textColor="@color/white"
-                                    android:textSize="@dimen/_10sdp"
-                                    app:layout_constraintLeft_toRightOf="@id/view"
-                                    app:layout_constraintTop_toTopOf="@id/surah_revelation_type"
-                                    tools:text="7 verses" />
-                            </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/surah_name_ar"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/_10sdp"
-                                android:fontFamily="@font/poppins_medium"
-                                android:textColor="@color/white"
-                                android:textSize="@dimen/_24sdp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintRight_toRightOf="parent"
-                                app:layout_constraintTop_toTopOf="@id/imageView"
-                                tools:text="ةحتافلا" />
-                        </LinearLayout>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/_5sdp"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        tools:listitem="@layout/item_ayah" />
-                </LinearLayout>
-<!--            </androidx.core.widget.NestedScrollView>-->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="@dimen/_5sdp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_ayah" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 

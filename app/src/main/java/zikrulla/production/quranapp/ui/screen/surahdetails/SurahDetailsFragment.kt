@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter
 import android.widget.SeekBar
 import androidx.activity.addCallback
 import androidx.core.view.isVisible
@@ -24,8 +25,9 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import zikrulla.production.quranapp.R
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
-import zikrulla.production.quranapp.data.model.Ayah
+import zikrulla.production.quranapp.data.model.AyahItem
 import zikrulla.production.quranapp.data.model.LastItem
+import zikrulla.production.quranapp.data.model.MultiTypeItem
 import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.databinding.FragmentSurahDetaailsBinding
 import zikrulla.production.quranapp.service.AudioService
@@ -33,6 +35,8 @@ import zikrulla.production.quranapp.ui.adapter.AyahAdapter
 import zikrulla.production.quranapp.util.Audios
 import zikrulla.production.quranapp.util.Constants.ARG_SURAH_NAME
 import zikrulla.production.quranapp.util.Constants.DATA_URL
+import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
+import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
@@ -72,16 +76,17 @@ class SurahDetailsFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun load() {
         viewModel.fetchSurah(surahEntity?.number ?: 1)
         handler = Handler(Looper.getMainLooper())
 
-        adapter = AyahAdapter(emptyList()) { ayah, position, _playing ->
+        adapter = AyahAdapter(listOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))) { ayah, position, _playing ->
             var change = false
             if (lastItem?.lastAudio != null)
                 change = lastItem?.lastAudio != ayah.ayahUzArEntity.number
             if (change)
-                adapter.updateItem(lastItem?.lastPosition?.minus(1), false)
+                adapter.updateItem(lastItem?.lastPosition, false)
             lastItem = LastItem(ayah.ayahUzArEntity.number, ayah.ayahUzArEntity.numberInSurah)
             viewModel.setLastItem(lastItem!!)
             player(lastItem, change)
@@ -89,22 +94,16 @@ class SurahDetailsFragment : Fragment() {
         }
         val layoutManager = LinearLayoutManager(requireContext())
 
-
         binding.apply {
+            recyclerView.isNestedScrollingEnabled = false
             recyclerView.adapter = adapter
             recyclerView.layoutManager = layoutManager
-            surahNameAr.text = surahEntity?.name
-            surahName.text = surahEntity?.englishName
-            surahRevelationType.text = surahEntity?.revelationType
-            surahNumberOfAyahs.text = surahEntity?.numberOfAyahs.toString()
         }
+
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
 
-                Log.d(TAG, "onScrolled: $dx $dy")
-                Log.d(TAG, "onScrolled: $firstVisibleItemPosition $layoutManager.findLastCompletelyVisibleItemPosition()")
             }
         })
     }
@@ -160,10 +159,10 @@ class SurahDetailsFragment : Fragment() {
                 }
             }
             playing = audioService?.isPlaying()
-            adapter.updateItem(_lastItem?.lastPosition?.minus(1), playing)
+            adapter.updateItem(_lastItem?.lastPosition, playing)
         } else {
             setService(true, _lastItem?.lastAudio)
-            adapter.updateItem(_lastItem?.lastPosition?.minus(1), true)
+            adapter.updateItem(_lastItem?.lastPosition, true)
         }
     }
 
@@ -197,7 +196,9 @@ class SurahDetailsFragment : Fragment() {
                 }
 
                 is Resource.Success -> {
-                    adapter.submitList(it.data.map { Ayah(it, false) })
+                    val items = arrayListOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))
+                    items.addAll(it.data.map { MultiTypeItem(ITEM_AYAH, AyahItem(it, false)) })
+                    adapter.submitList(items)
                     swipeVisible(false)
                 }
             }
@@ -253,7 +254,7 @@ class SurahDetailsFragment : Fragment() {
         override fun onServiceDisconnected(name: ComponentName?) {
             mBound = false
             viewModel.fetchService(mBound)
-            adapter.updateItem(lastItem?.lastPosition?.minus(1), false)
+            adapter.updateItem(lastItem?.lastPosition, false)
             Log.d(TAG, "onServiceDisconnected: ")
         }
 

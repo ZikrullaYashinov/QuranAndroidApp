@@ -6,18 +6,22 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import zikrulla.production.quranapp.R
-import zikrulla.production.quranapp.data.model.Ayah
+import zikrulla.production.quranapp.data.local.entity.SurahEntity
+import zikrulla.production.quranapp.data.model.AyahItem
+import zikrulla.production.quranapp.data.model.MultiTypeItem
 import zikrulla.production.quranapp.databinding.ItemAyahBinding
+import zikrulla.production.quranapp.databinding.ItemSurahInfoBinding
+import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 
 class AyahAdapter(
-    private var ayahList: List<Ayah>,
-    private val playClick: (Ayah, position: Int, _playing: Boolean?) -> Unit
-) : Adapter<AyahAdapter.Vh>() {
+    private var itemList: List<MultiTypeItem>,
+    private val playClick: (AyahItem, position: Int, _playing: Boolean?) -> Unit
+) : Adapter<ViewHolder>() {
 
     var playing: Boolean? = null
 
-    inner class Vh(private val binding: ItemAyahBinding) : ViewHolder(binding.root) {
-        fun bind(ayah: Ayah, position: Int) {
+    inner class VhAyah(private val binding: ItemAyahBinding) : ViewHolder(binding.root) {
+        fun bind(ayah: AyahItem, position: Int) {
             binding.apply {
                 ayahAr.text = ayah.ayahUzArEntity.textAr
                 ayahUz.text = ayah.ayahUzArEntity.textUz
@@ -30,23 +34,63 @@ class AyahAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        Vh(ItemAyahBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-
-    override fun getItemCount() = ayahList.size
-
-    override fun onBindViewHolder(holder: Vh, position: Int) {
-        holder.bind(ayahList[position], position)
+    inner class VhSurahInfo(private val binding: ItemSurahInfoBinding) : ViewHolder(binding.root) {
+        fun bind(surahEntity: SurahEntity, position: Int) {
+            binding.apply {
+                surahNameAr.text = surahEntity.name
+                surahName.text = surahEntity.englishName
+                surahRevelationType.text = surahEntity.revelationType
+                surahNumberOfAyahs.text = surahEntity.numberOfAyahs.toString()
+            }
+        }
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return when (viewType) {
+            ITEM_AYAH -> VhAyah(
+                ItemAyahBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+
+            else -> VhSurahInfo(
+                ItemSurahInfoBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+        }
+
+    }
+
+    override fun getItemCount() = itemList.size
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        when (holder) {
+            is VhAyah -> {
+                holder.bind(itemList[position].obj as AyahItem, position)
+            }
+
+            is VhSurahInfo -> {
+                holder.bind(itemList[position].obj as SurahEntity, position)
+            }
+        }
+
+    }
+
+    override fun getItemViewType(position: Int): Int = itemList[position].type
+
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(ayahList: List<Ayah>) {
-        this.ayahList = ayahList
+    fun submitList(itemList: List<MultiTypeItem>) {
+        this.itemList = itemList
         notifyDataSetChanged()
     }
 
     fun updateItem(position: Int?, _playing: Boolean?) {
-        ayahList[position!!].playing = _playing ?: false
+        (itemList[position!!].obj as AyahItem).playing = _playing ?: false
         notifyItemChanged(position)
     }
 }
