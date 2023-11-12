@@ -23,5 +23,9 @@ class SurahDetailsUseCaseImp @Inject constructor(
         repository.insertSurah(list)
     }
 
+    override suspend fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?) {
+        repository.updateSurah(surahId, visibleItemPosition)
+    }
+
 
 }

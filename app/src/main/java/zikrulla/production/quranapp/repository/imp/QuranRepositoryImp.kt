@@ -55,4 +55,8 @@ class QuranRepositoryImp @Inject constructor(
         appDatabase.surahDao().insertAll(list)
     }
 
+    override suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?) {
+        appDatabase.surahDao().updateSurah(surahId, visibleItemPosition)
+    }
+
 }

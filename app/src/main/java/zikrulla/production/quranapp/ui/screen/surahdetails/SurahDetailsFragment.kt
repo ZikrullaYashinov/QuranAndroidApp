@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Adapter
 import android.widget.SeekBar
 import androidx.activity.addCallback
 import androidx.core.view.isVisible
@@ -61,6 +60,7 @@ class SurahDetailsFragment : Fragment() {
     private var intent: Intent? = null
     private var lastItem: LastItem? = null
     private var playing: Boolean? = null
+    private var firstVisibleItemPosition: Int? = null
     private var mBound = false
 
     override fun onCreateView(
@@ -81,7 +81,14 @@ class SurahDetailsFragment : Fragment() {
         viewModel.fetchSurah(surahEntity?.number ?: 1)
         handler = Handler(Looper.getMainLooper())
 
-        adapter = AyahAdapter(listOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))) { ayah, position, _playing ->
+        adapter = AyahAdapter(
+            listOf(
+                MultiTypeItem(
+                    ITEM_SURAH_INFO,
+                    surahEntity!!
+                )
+            )
+        ) { ayah, position, _playing ->
             var change = false
             if (lastItem?.lastAudio != null)
                 change = lastItem?.lastAudio != ayah.ayahUzArEntity.number
@@ -95,15 +102,13 @@ class SurahDetailsFragment : Fragment() {
         val layoutManager = LinearLayoutManager(requireContext())
 
         binding.apply {
-            recyclerView.isNestedScrollingEnabled = false
             recyclerView.adapter = adapter
             recyclerView.layoutManager = layoutManager
         }
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
+                firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
             }
         })
     }
@@ -178,6 +183,7 @@ class SurahDetailsFragment : Fragment() {
         } else {
             audioService?.onStop()
             handler.removeCallbacks(runnable)
+            viewModel.saveVisibleItemPosition(surahEntity?.number!!, firstVisibleItemPosition)
         }
     }
 
@@ -199,6 +205,7 @@ class SurahDetailsFragment : Fragment() {
                     val items = arrayListOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))
                     items.addAll(it.data.map { MultiTypeItem(ITEM_AYAH, AyahItem(it, false)) })
                     adapter.submitList(items)
+                    binding.recyclerView.scrollToPosition(surahEntity?.lastReadAyah ?: 0)
                     swipeVisible(false)
                 }
             }

@@ -10,4 +10,5 @@ interface SurahDetailsViewModel {
     fun getService(): LiveData<AudioService?>
     fun fetchSurah(id: Int)
     fun fetchSurahApi(id: Int)
+    fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?)
 }

@@ -11,4 +11,5 @@ interface SurahDetailsUseCase {
     fun getSurah(id: Int): Flow<Resource<List<Surah>>>
     fun getSurahDB(id: Int): Flow<List<AyahUzArEntity>>
     suspend fun insertSurah(list: List<AyahUzArEntity>)
+    suspend fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?)
 }

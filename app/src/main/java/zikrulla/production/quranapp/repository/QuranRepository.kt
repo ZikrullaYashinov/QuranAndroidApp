@@ -15,5 +15,6 @@ interface QuranRepository {
     fun getSurahListNameDB(): Flow<List<SurahEntity>>
     suspend fun insertSurah(list: List<AyahUzArEntity>)
     suspend fun insertSurahListName(list: List<SurahEntity>)
+    suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?)
 
 }

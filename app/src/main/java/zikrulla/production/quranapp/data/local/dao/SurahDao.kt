@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
 
@@ -15,5 +16,8 @@ interface SurahDao {
 
     @Query("SELECT * FROM surah")
     fun getSurah(): Flow<List<SurahEntity>>
+
+    @Query("UPDATE surah SET lastReadAyah = :visibleItemPosition WHERE number = :surahId")
+    suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?)
 
 }

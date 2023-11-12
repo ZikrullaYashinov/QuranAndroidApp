@@ -27,10 +27,12 @@ class SurahDetailsViewModelImp @Inject constructor(
 
     private val _stateAyahUzAr = MutableLiveData<Resource<List<AyahUzArEntity>>>()
     private val _stateService = MutableLiveData<AudioService?>()
+    private val _stateVisibleItemPosition = MutableLiveData<Int?>()
     private val _stateLastItem = MutableLiveData<LastItem?>()
 
     override fun getAyahUzAr() = _stateAyahUzAr
     override fun getService() = _stateService
+
     fun getLastAudioUrl() = _stateLastItem
     override fun fetchSurah(id: Int) {
         viewModelScope.launch {
@@ -78,6 +80,12 @@ class SurahDetailsViewModelImp @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    override fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?) {
+        viewModelScope.launch {
+            surahDetailsUseCase.saveVisibleItemPosition(surahId, visibleItemPosition)
         }
     }
 
