@@ -1,7 +1,7 @@
 package zikrulla.production.quranapp.data.model
 
-sealed class Resource<T> {
-    class Loading<T> : Resource<T>()
+sealed class Resource<out T> {
+    object Loading : Resource<Nothing>()
     class Success<T : Any>(val data: T) : Resource<T>()
-    class Error<T : Any>(val e: Throwable) : Resource<T>()
+    class Error(val e: Throwable) : Resource<Nothing>()
 }

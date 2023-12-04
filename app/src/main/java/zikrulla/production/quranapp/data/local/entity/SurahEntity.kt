@@ -22,4 +22,8 @@ data class SurahEntity(
     val revelationType: String,
     @SerializedName("lastReadAyah")
     val lastReadAyah: Int? = null
-) : Serializable
+) : Serializable{
+    override fun toString(): String {
+        return """SurahEntity(englishName = "${this.englishName}", englishNameTranslation = "${this.englishNameTranslation}", number = ${this.number}, numberOfAyahs = ${this.numberOfAyahs}, revelationType = "${this.revelationType}", name = "${this.name}")""".trimMargin()
+    }
+}

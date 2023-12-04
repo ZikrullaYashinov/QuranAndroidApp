@@ -8,5 +8,6 @@
     <string name="get_started">Get Started</string>
     <string name="asslamualaikum">Asslamualaikum</string>
     <string name="last_read">Last Read</string>
+    <string name="ayah_number">Ayah number: </string>
     <string name="al_fatiah">Al-Fatiah</string>
 </resources>

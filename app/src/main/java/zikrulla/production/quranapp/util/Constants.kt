@@ -25,5 +25,8 @@ object Constants {
 
     const val ITEM_AYAH = 0
     const val ITEM_SURAH_INFO = 1
+
+    const val ITEM_SURAH_NAME = 0
+    const val ITEM_SURAH_LAST_READ = 1
 }
 

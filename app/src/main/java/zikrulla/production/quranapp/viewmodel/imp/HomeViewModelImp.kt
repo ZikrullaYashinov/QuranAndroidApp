@@ -1,59 +1,53 @@
 package zikrulla.production.quranapp.viewmodel.imp
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.usecase.HomeUseCase
-import zikrulla.production.quranapp.viewmodel.HomeViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModelImp @Inject constructor(
-    private val homeUseCase: HomeUseCase
-) : ViewModel(), HomeViewModel {
+    private val homeUseCase: HomeUseCase,
+) : ViewModel() {
 
-    private val _stateSurahNameList = MutableLiveData<Resource<List<SurahEntity>>>()
+    private val _stateSurahNameList =
+        MutableStateFlow<Resource<List<SurahEntity>>>(Resource.Loading)
+
+    fun getSurahNameList() = _stateSurahNameList.asStateFlow()
+
 
     init {
         fetchSurahListNameDB()
     }
 
-    override fun getSurahNameList() = _stateSurahNameList
-    override fun fetchSurahListNameDB() {
-        viewModelScope.launch {
-            homeUseCase.getSurahListNameDB().onStart {
-                _stateSurahNameList.postValue(Resource.Loading())
-            }.catch {
-                _stateSurahNameList.postValue(Resource.Error(it))
-            }.collect {
+    private fun fetchSurahListNameDB() {
+        _stateSurahNameList.value = Resource.Loading
+        homeUseCase.getSurahListNameDB()
+            .onEach {
                 if (it.isNotEmpty())
-                    _stateSurahNameList.postValue(Resource.Success(it))
+                    _stateSurahNameList.emit(Resource.Success(it))
                 else
                     fetchSurahListName()
-            }
-        }
+            }.launchIn(viewModelScope)
     }
 
-    override fun fetchSurahListName() {
-        viewModelScope.launch {
-            homeUseCase.getSurahListName().onStart {
-                _stateSurahNameList.postValue(Resource.Loading())
-            }.catch {
-                _stateSurahNameList.postValue(Resource.Error(it))
-            }.collect { it ->
+    private fun fetchSurahListName() {
+        homeUseCase.getSurahListName()
+            .onEach { it ->
                 when (it) {
                     is Resource.Error -> {
-                        _stateSurahNameList.postValue(Resource.Error(it.e))
+//                    TODO()
                     }
 
-                    is Resource.Loading -> {
-                        _stateSurahNameList.postValue(Resource.Loading())
+                    Resource.Loading -> {
+//                    TODO()
                     }
 
                     is Resource.Success -> {
@@ -61,8 +55,7 @@ class HomeViewModelImp @Inject constructor(
                         homeUseCase.insertSurahListName(list)
                     }
                 }
-            }
-        }
+            }.launchIn(viewModelScope)
     }
 
 }

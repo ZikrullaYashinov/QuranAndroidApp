@@ -5,7 +5,6 @@ import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.Resource
 
 interface HomeViewModel {
-    fun getSurahNameList(): LiveData<Resource<List<SurahEntity>>>
-    fun fetchSurahListName()
-    fun fetchSurahListNameDB()
+    suspend fun fetchSurahListName()
+    suspend fun fetchSurahListNameDB()
 }

@@ -18,10 +18,18 @@ import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ThreadContextElement
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.invoke
+import kotlinx.coroutines.launch
 import zikrulla.production.quranapp.R
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.AyahItem
@@ -39,10 +47,11 @@ import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
+import kotlin.coroutines.CoroutineContext
 
 
 @AndroidEntryPoint
-class SurahDetailsFragment : Fragment() {
+class SurahDetailsFragment : Fragment(), CoroutineScope {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,12 +77,16 @@ class SurahDetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSurahDetaailsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         load()
         click()
         observe()
 
-        return binding.root
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -99,8 +112,8 @@ class SurahDetailsFragment : Fragment() {
             player(lastItem, change)
             adapter.updateItem(position, !(_playing ?: false))
         }
-        val layoutManager = LinearLayoutManager(requireContext())
 
+        val layoutManager = LinearLayoutManager(requireContext())
         binding.apply {
             recyclerView.adapter = adapter
             recyclerView.layoutManager = layoutManager
@@ -145,6 +158,56 @@ class SurahDetailsFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun observe() {
+        viewModel.stateAyahUzAr.onEach { resource ->
+            when (resource) {
+                is Resource.Error -> {
+                    Log.d(TAG, "observe: Error ${resource.e}")
+                    swipeVisible(false)
+                }
+
+                is Resource.Loading -> {
+                    Log.d(TAG, "observe: Loading")
+                    swipeVisible(true)
+                }
+
+                is Resource.Success -> {
+                    val items = arrayListOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))
+                    items.addAll(resource.data.map {
+                        MultiTypeItem(
+                            ITEM_AYAH,
+                            AyahItem(it, false)
+                        )
+                    })
+                    adapter.submitList(items)
+                    binding.recyclerView.scrollToPosition(surahEntity?.lastReadAyah ?: 0)
+                    swipeVisible(false)
+                }
+            }
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
+
+        viewModel.stateService.onEach {
+            if (it != null) {
+                binding.player.isVisible = true
+                audioService = it
+                mBound = true
+                handler.postDelayed(runnable, 1000)
+            } else {
+                mBound = false
+                updateMediaPlayer(0, 0, false)
+                setService(false)
+            }
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
+
+        viewModel.stateLastItem.onEach {
+            if (it != null)
+                binding.player.isVisible = true
+            lastItem = it
+            binding.mediaTitle.text = "${surahEntity?.englishName} Ayah ${lastItem?.lastPosition}"
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
     private fun player(_lastItem: LastItem?, change: Boolean) {
         binding.player.isVisible = true
         if (mBound) {
@@ -172,66 +235,36 @@ class SurahDetailsFragment : Fragment() {
     }
 
     private fun setService(isStart: Boolean = true, number: Int? = null) {
-        intent = Intent(requireActivity(), AudioService::class.java)
-        if (isStart) {
-            intent?.putExtra(
-                DATA_URL,
-                Audios.getAyah(number!!, Edition.ALAFASY)
-            )
-            requireActivity().startService(intent)
-            requireActivity().bindService(intent!!, connection, Context.BIND_EXTERNAL_SERVICE)
-        } else {
-            audioService?.onStop()
-            handler.removeCallbacks(runnable)
-            viewModel.saveVisibleItemPosition(surahEntity?.number!!, firstVisibleItemPosition)
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun observe() {
-        viewModel.getAyahUzAr().observe(viewLifecycleOwner) {
-            when (it) {
-                is Resource.Error -> {
-                    Log.d(TAG, "observe: Error ${it.e}")
-                    swipeVisible(false)
-                }
-
-                is Resource.Loading -> {
-                    Log.d(TAG, "observe: Loading")
-                    swipeVisible(true)
-                }
-
-                is Resource.Success -> {
-                    val items = arrayListOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))
-                    items.addAll(it.data.map { MultiTypeItem(ITEM_AYAH, AyahItem(it, false)) })
-                    adapter.submitList(items)
-                    binding.recyclerView.scrollToPosition(surahEntity?.lastReadAyah ?: 0)
-                    swipeVisible(false)
-                }
-            }
-        }
-        viewModel.getService().observe(viewLifecycleOwner) {
-            if (it != null) {
-                binding.player.isVisible = true
-                audioService = it
-                mBound = true
-                handler.postDelayed(runnable, 1000)
+        launch {
+            if (isStart) {
+                intent = Intent(requireActivity(), AudioService::class.java)
+                intent?.putExtra(
+                    DATA_URL,
+                    Audios.getAyah(number!!, Edition.ALAFASY)
+                )
+                requireActivity().startService(intent)
+                requireActivity().bindService(intent!!, connection, Context.BIND_EXTERNAL_SERVICE)
             } else {
-                mBound = false
-                updateMediaPlayer(0, 0, false)
-                setService(false)
+                audioService?.onStop()
+                handler.removeCallbacks(runnable)
+                viewModel.saveVisibleItemPosition(surahEntity?.number!!, firstVisibleItemPosition)
             }
-        }
-        viewModel.getLastAudioUrl().observe(viewLifecycleOwner) {
-            if (it != null)
-                binding.player.isVisible = true
-            lastItem = it
-            binding.mediaTitle.text = "${surahEntity?.englishName} Ayah ${lastItem?.lastPosition}"
-        }
+        }.start()
     }
 
     private fun swipeVisible(isVisibility: Boolean) {
         binding.swipe.isRefreshing = isVisibility
+    }
+
+    private fun updateMediaPlayer(duration: Int, currentPosition: Int?, playing: Boolean?) {
+        val icon = if (playing == false) R.drawable.ic_play else R.drawable.ic_pause
+
+        binding.apply {
+            seekBar.max = duration
+            seekBar.progress = currentPosition ?: 0
+            play.setImageResource(icon)
+        }
+
     }
 
     private val connection = object : ServiceConnection {
@@ -267,17 +300,6 @@ class SurahDetailsFragment : Fragment() {
 
     }
 
-    private fun updateMediaPlayer(duration: Int, currentPosition: Int?, playing: Boolean?) {
-        val icon = if (playing == false) R.drawable.ic_play else R.drawable.ic_pause
-
-        binding.apply {
-            seekBar.max = duration
-            seekBar.progress = currentPosition ?: 0
-            play.setImageResource(icon)
-        }
-
-    }
-
     val runnable = object : Runnable {
         override fun run() {
             val duration = audioService?.getDuration() ?: 0
@@ -295,4 +317,7 @@ class SurahDetailsFragment : Fragment() {
         @JvmStatic
         fun newInstance() = SurahDetailsFragment()
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO
 }

@@ -20,22 +20,20 @@ class QuranRepositoryImp @Inject constructor(
     override fun getSurah(id: Int): Flow<Resource<List<Surah>>> {
         return flow {
             val response = apiService.getSurah(id)
-            if (response.isSuccessful) {
+            if (response.isSuccessful)
                 emit(Resource.Success(response.body()?.data!!))
-            } else {
+            else
                 emit(Resource.Error(Throwable(response.message())))
-            }
         }
     }
 
     override fun getSurahListName(): Flow<Resource<List<SurahName>>> {
         return flow {
             val response = apiService.getSurahList()
-            if (response.isSuccessful) {
+            if (response.isSuccessful)
                 emit(Resource.Success(response.body()?.data!!))
-            } else {
+            else
                 emit(Resource.Error(Throwable(response.message())))
-            }
         }
     }
 
