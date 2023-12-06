@@ -12,4 +12,5 @@ interface SurahDetailsUseCase {
     fun getSurahDB(id: Int): Flow<List<AyahUzArEntity>>
     suspend fun insertSurah(list: List<AyahUzArEntity>)
     suspend fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?)
+    fun saveLastRead(surahId: Int)
 }

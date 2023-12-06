@@ -9,12 +9,15 @@ import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.data.model.SurahName
 import zikrulla.production.quranapp.data.remote.api.ApiService
 import zikrulla.production.quranapp.data.remote.response.Surah
+import zikrulla.production.quranapp.data.sheredpref.SharedPref
 import zikrulla.production.quranapp.repository.QuranRepository
+import zikrulla.production.quranapp.util.Constants
 import javax.inject.Inject
 
 class QuranRepositoryImp @Inject constructor(
     private val apiService: ApiService,
-    private val appDatabase: AppDatabase
+    private val appDatabase: AppDatabase,
+    private val sharedPref: SharedPref
 ) : QuranRepository {
 
     override fun getSurah(id: Int): Flow<Resource<List<Surah>>> {
@@ -55,6 +58,14 @@ class QuranRepositoryImp @Inject constructor(
 
     override suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?) {
         appDatabase.surahDao().updateSurah(surahId, visibleItemPosition)
+    }
+
+    override fun getLastReadShP(): Int? {
+        return sharedPref.get(Constants.PREF_LAST_READ_SURAH_ID, Int::class.java)
+    }
+
+    override fun saveLastReadShP(id: Int) {
+        sharedPref.put(Constants.PREF_LAST_READ_SURAH_ID, id)
     }
 
 }

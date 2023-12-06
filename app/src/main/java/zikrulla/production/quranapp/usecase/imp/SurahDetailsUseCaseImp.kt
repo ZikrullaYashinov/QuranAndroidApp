@@ -27,5 +27,9 @@ class SurahDetailsUseCaseImp @Inject constructor(
         repository.updateSurah(surahId, visibleItemPosition)
     }
 
+    override fun saveLastRead(surahId: Int) {
+        repository.saveLastReadShP(surahId)
+    }
+
 
 }

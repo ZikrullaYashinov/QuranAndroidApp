@@ -36,6 +36,7 @@ import zikrulla.production.quranapp.data.model.AyahItem
 import zikrulla.production.quranapp.data.model.LastItem
 import zikrulla.production.quranapp.data.model.MultiTypeItem
 import zikrulla.production.quranapp.data.model.Resource
+import zikrulla.production.quranapp.data.sheredpref.SharedPref
 import zikrulla.production.quranapp.databinding.FragmentSurahDetaailsBinding
 import zikrulla.production.quranapp.service.AudioService
 import zikrulla.production.quranapp.ui.adapter.AyahAdapter
@@ -44,9 +45,11 @@ import zikrulla.production.quranapp.util.Constants.ARG_SURAH_NAME
 import zikrulla.production.quranapp.util.Constants.DATA_URL
 import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
+import zikrulla.production.quranapp.util.Constants.PREF_LAST_READ_SURAH_ID
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 
@@ -69,8 +72,9 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
     private var intent: Intent? = null
     private var lastItem: LastItem? = null
     private var playing: Boolean? = null
-    private var firstVisibleItemPosition: Int? = null
+    private var lastVisibleItemPosition: Int? = null
     private var mBound = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -121,7 +125,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
             }
         })
     }
@@ -131,6 +135,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
             back.setOnClickListener {
                 findNavController().popBackStack()
                 setService(false)
+                saveLastRead()
             }
             swipe.setOnRefreshListener {
                 viewModel.fetchSurah(surahEntity?.number ?: 1)
@@ -152,8 +157,9 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {}
             })
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                setService(false)
                 findNavController().popBackStack()
+                saveLastRead()
+                setService(false)
             }
         }
     }
@@ -235,21 +241,23 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
     }
 
     private fun setService(isStart: Boolean = true, number: Int? = null) {
-        launch {
-            if (isStart) {
-                intent = Intent(requireActivity(), AudioService::class.java)
-                intent?.putExtra(
-                    DATA_URL,
-                    Audios.getAyah(number!!, Edition.ALAFASY)
-                )
-                requireActivity().startService(intent)
-                requireActivity().bindService(intent!!, connection, Context.BIND_EXTERNAL_SERVICE)
-            } else {
-                audioService?.onStop()
-                handler.removeCallbacks(runnable)
-                viewModel.saveVisibleItemPosition(surahEntity?.number!!, firstVisibleItemPosition)
-            }
-        }.start()
+        if (isStart) {
+            intent = Intent(requireActivity(), AudioService::class.java)
+            intent?.putExtra(
+                DATA_URL,
+                Audios.getAyah(number!!, Edition.ALAFASY)
+            )
+            requireActivity().startService(intent)
+            requireActivity().bindService(intent!!, connection, Context.BIND_EXTERNAL_SERVICE)
+        } else {
+            audioService?.onStop()
+            handler.removeCallbacks(runnable)
+        }
+    }
+
+    private fun saveLastRead() {
+        viewModel.saveVisibleItemPosition(surahEntity?.number!!, lastVisibleItemPosition)
+        viewModel.saveLastRead(surahEntity?.number!!)
     }
 
     private fun swipeVisible(isVisibility: Boolean) {

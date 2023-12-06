@@ -79,6 +79,10 @@ class SurahDetailsViewModelImp @Inject constructor(
         }
     }
 
+    fun saveLastRead(surahId: Int) {
+        surahDetailsUseCase.saveLastRead(surahId)
+    }
+
     fun fetchService(mBound: Boolean, audioService: AudioService? = null) {
         if (mBound && audioService != null)
             _stateService.value = audioService

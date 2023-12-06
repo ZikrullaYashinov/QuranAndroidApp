@@ -28,5 +28,8 @@ object Constants {
 
     const val ITEM_SURAH_NAME = 0
     const val ITEM_SURAH_LAST_READ = 1
+
+    const val PREF = "my_pref"
+    const val PREF_LAST_READ_SURAH_ID = "last_read_surah_id"
 }
 
