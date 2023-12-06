@@ -35,10 +35,11 @@ class SurahNameAdapter(
     inner class VhSurahLastRead(private val binding: ItemSurahLastReadBinding) :
         ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(surahEntity: SurahEntity, position: Int) {
+        fun bind(surahEntity: SurahEntity) {
             binding.apply {
+                rootLayout.setOnClickListener { itemClick.invoke(surahEntity) }
                 lastSurahName.text = surahEntity.englishName
-                lastAyahNumber.text = "${lastRead.context.getString(R.string.ayah_number)}${surahEntity.lastReadAyah}"
+                lastAyahNumber.text = "${lastRead.context.getString(R.string.ayah_number)} ${surahEntity.lastReadAyah}"
             }
         }
     }
@@ -64,7 +65,7 @@ class SurahNameAdapter(
         if (holder is VhSurahName) {
             holder.bind(multiTypeItem)
         } else if (holder is VhSurahLastRead) {
-            holder.bind(multiTypeItem, position)
+            holder.bind(multiTypeItem)
         }
     }
 

@@ -24,4 +24,8 @@ class HomeUseCaseImp @Inject constructor(
         repository.insertSurahListName(list)
     }
 
+    override fun getLastRead(): Int? {
+        return repository.getLastReadShP()
+    }
+
 }

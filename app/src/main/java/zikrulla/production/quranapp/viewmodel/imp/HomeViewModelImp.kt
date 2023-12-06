@@ -58,4 +58,8 @@ class HomeViewModelImp @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
+    fun getLastRead(): Int? {
+        return homeUseCase.getLastRead()
+    }
+
 }

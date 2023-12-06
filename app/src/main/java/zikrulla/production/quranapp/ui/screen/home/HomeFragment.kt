@@ -37,6 +37,7 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.action_homeFragment_to_surahDetailsFragment, bundle)
         }
     }
+    private var lastReadSurahId = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,17 +47,6 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    private fun load() {
-        binding.apply {
-            recyclerView.adapter = adapter
-            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        }
-    }
-
-    private fun click() {
-
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         load()
@@ -64,12 +54,24 @@ class HomeFragment : Fragment() {
         observe()
     }
 
+    private fun load() {
+        binding.apply {
+            recyclerView.adapter = adapter
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        }
+        lastReadSurahId = viewModel.getLastRead() ?: 0
+    }
+
+    private fun click() {
+
+    }
+
     private fun observe() {
         viewModel.getSurahNameList()
-            .onEach { resourceListSurahEntity ->
-                when (resourceListSurahEntity) {
+            .onEach { resourceSurahes ->
+                when (resourceSurahes) {
                     is Resource.Error -> {
-                        Log.d(TAG, "observe: Error ${resourceListSurahEntity.e}")
+                        Log.d(TAG, "observe: Error ${resourceSurahes.e}")
                     }
 
                     is Resource.Loading -> {
@@ -77,21 +79,16 @@ class HomeFragment : Fragment() {
                     }
 
                     is Resource.Success -> {
-                        Log.d(TAG, "observe: Success ${resourceListSurahEntity.data}")
-                        val multiTypeItems = mutableListOf(
-                            MultiTypeItem(
-                                ITEM_SURAH_LAST_READ,
-                                SurahEntity(
-                                    englishName = "Al-Faatiha",
-                                    englishNameTranslation = "The Opening",
-                                    number = 1,
-                                    numberOfAyahs = 7,
-                                    revelationType = "Meccan",
-                                    name = "سُورَةُ ٱلْفَاتِحَةِ"
+                        Log.d(TAG, "observe: Success ${resourceSurahes.data}")
+                        val multiTypeItems = mutableListOf<MultiTypeItem>()
+                        if (lastReadSurahId != 0)
+                            multiTypeItems.add(
+                                MultiTypeItem(
+                                    ITEM_SURAH_LAST_READ,
+                                    resourceSurahes.data[lastReadSurahId - 1]
                                 )
                             )
-                        )
-                        resourceListSurahEntity.data.map {
+                        resourceSurahes.data.map {
                             multiTypeItems.add(MultiTypeItem(ITEM_SURAH_NAME, it))
                         }
                         adapter.submitList(multiTypeItems)
