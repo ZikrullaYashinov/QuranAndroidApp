@@ -16,6 +16,7 @@ interface QuranRepository {
     suspend fun insertSurah(list: List<AyahUzArEntity>)
     suspend fun insertSurahListName(list: List<SurahEntity>)
     suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?)
+    suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean)
     fun getLastReadShP(): Int?
     fun saveLastReadShP(id: Int)
 

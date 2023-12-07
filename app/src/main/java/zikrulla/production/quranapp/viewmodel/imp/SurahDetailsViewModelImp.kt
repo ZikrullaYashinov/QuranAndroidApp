@@ -35,8 +35,10 @@ class SurahDetailsViewModelImp @Inject constructor(
     private val _stateLastItem = MutableStateFlow<LastItem?>(null)
     val stateLastItem get() = _stateLastItem.asStateFlow()
 
+    private val _stateLastReadIsUpdate = MutableStateFlow(false)
+    val stateLastReadIsUpdate get() = _stateLastReadIsUpdate.asStateFlow()
 
-    //    private val _stateVisibleItemPosition = MutableLiveData<Int?>()
+
     override fun fetchSurah(id: Int) {
         surahDetailsUseCase.getSurahDB(id).onEach {
             if (it.isNotEmpty())
@@ -81,6 +83,18 @@ class SurahDetailsViewModelImp @Inject constructor(
 
     fun saveLastRead(surahId: Int) {
         surahDetailsUseCase.saveLastRead(surahId)
+    }
+
+    fun saveLastRead(ayahId: Int, isFavourite: Boolean) {
+        viewModelScope.launch {
+            surahDetailsUseCase.updateIsFavourite(ayahId, isFavourite)
+        }
+    }
+
+    fun setLastReadIsUpdate() {
+        val value = _stateLastReadIsUpdate.value
+        if (!value)
+            _stateLastReadIsUpdate.value = true
     }
 
     fun fetchService(mBound: Boolean, audioService: AudioService? = null) {

@@ -60,6 +60,10 @@ class QuranRepositoryImp @Inject constructor(
         appDatabase.surahDao().updateSurah(surahId, visibleItemPosition)
     }
 
+    override suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean) {
+        appDatabase.ayahUzArDao().updateIsFavourite(ayahId, isFavourite)
+    }
+
     override fun getLastReadShP(): Int? {
         return sharedPref.get(Constants.PREF_LAST_READ_SURAH_ID, Int::class.java)
     }

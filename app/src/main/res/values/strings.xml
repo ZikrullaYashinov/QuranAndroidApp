@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">Quran App</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="audio_quran">Audio Quran</string>
     <string name="quran">Quran</string>
     <string name="learn_quran_and_recite_once_everyday">Learn Quran and Recite once everyday</string>
@@ -9,5 +7,6 @@
     <string name="asslamualaikum">Asslamualaikum</string>
     <string name="last_read">Last Read</string>
     <string name="ayah_number">Ayah number: </string>
+    <string name="ayah">Ayah</string>
     <string name="al_fatiah">Al-Fatiah</string>
 </resources>

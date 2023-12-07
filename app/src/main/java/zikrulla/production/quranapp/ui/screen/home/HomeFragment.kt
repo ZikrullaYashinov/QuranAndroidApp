@@ -81,7 +81,7 @@ class HomeFragment : Fragment() {
                     is Resource.Success -> {
                         Log.d(TAG, "observe: Success ${resourceSurahes.data}")
                         val multiTypeItems = mutableListOf<MultiTypeItem>()
-                        if (lastReadSurahId != 0)
+                        if (lastReadSurahId > 0)
                             multiTypeItems.add(
                                 MultiTypeItem(
                                     ITEM_SURAH_LAST_READ,

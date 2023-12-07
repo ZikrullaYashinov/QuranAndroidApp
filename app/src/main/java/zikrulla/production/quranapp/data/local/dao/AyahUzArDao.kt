@@ -16,4 +16,6 @@ interface AyahUzArDao {
     @Query("SELECT * FROM ayah WHERE surahId=:surahId")
     fun getAyahsBySurahId(surahId: Int): Flow<List<AyahUzArEntity>>
 
+    @Query("UPDATE ayah SET favourite = :value WHERE number = :ayahId")
+    suspend fun updateIsFavourite(ayahId: Int, value: Boolean)
 }

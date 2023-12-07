@@ -15,10 +15,10 @@ import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 
 class AyahAdapter(
     private var itemList: List<MultiTypeItem>,
-    private val playClick: (AyahItem, position: Int, _playing: Boolean?) -> Unit
+    private val playClick: (AyahItem, position: Int, playing: Boolean?) -> Unit,
+    private val saveClick: (AyahItem) -> Unit,
+    private val shareClick: (AyahItem) -> Unit,
 ) : Adapter<ViewHolder>() {
-
-    var playing: Boolean? = null
 
     inner class VhAyah(private val binding: ItemAyahBinding) : ViewHolder(binding.root) {
         fun bind(ayah: AyahItem, position: Int) {
@@ -26,10 +26,13 @@ class AyahAdapter(
                 ayahAr.text = ayah.ayahUzArEntity.textAr
                 ayahUz.text = ayah.ayahUzArEntity.textUz
                 number.text = ayah.ayahUzArEntity.numberInSurah.toString()
-                play.setOnClickListener {
-                    playClick.invoke(ayah, position, ayah.playing)
-                }
+                play.setOnClickListener { playClick.invoke(ayah, position, ayah.playing) }
+                save.setOnClickListener { saveClick.invoke(ayah) }
+                share.setOnClickListener { shareClick.invoke(ayah) }
                 play.setImageResource(if (!ayah.playing) R.drawable.ic_play else R.drawable.ic_pause)
+                val saveIcon =
+                    if (ayah.ayahUzArEntity.favourite) R.drawable.ic_save_fill else R.drawable.ic_save
+                save.setImageResource(saveIcon)
             }
         }
     }
@@ -89,8 +92,8 @@ class AyahAdapter(
         notifyDataSetChanged()
     }
 
-    fun updateItem(position: Int?, _playing: Boolean?) {
-        (itemList[position!!].obj as AyahItem).playing = _playing ?: false
+    fun updateItem(position: Int?, playing: Boolean?) {
+        (itemList[position!!].obj as AyahItem).playing = playing ?: false
         notifyItemChanged(position)
     }
 }

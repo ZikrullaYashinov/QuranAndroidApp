@@ -28,7 +28,9 @@ data class AyahUzArEntity(
     @SerializedName("textUz")
     val textUz: String,
     @SerializedName("textAr")
-    val textAr: String
+    val textAr: String,
+    @SerializedName("favourite")
+    val favourite: Boolean = false
 ) {
     fun toAyahUzAr(): AyahUzAr {
         return AyahUzAr(

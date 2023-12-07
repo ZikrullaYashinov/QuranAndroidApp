@@ -25,18 +25,15 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.invoke
-import kotlinx.coroutines.launch
 import zikrulla.production.quranapp.R
+import zikrulla.production.quranapp.data.local.entity.AyahUzArEntity
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.AyahItem
 import zikrulla.production.quranapp.data.model.LastItem
 import zikrulla.production.quranapp.data.model.MultiTypeItem
 import zikrulla.production.quranapp.data.model.Resource
-import zikrulla.production.quranapp.data.sheredpref.SharedPref
 import zikrulla.production.quranapp.databinding.FragmentSurahDetaailsBinding
 import zikrulla.production.quranapp.service.AudioService
 import zikrulla.production.quranapp.ui.adapter.AyahAdapter
@@ -45,11 +42,9 @@ import zikrulla.production.quranapp.util.Constants.ARG_SURAH_NAME
 import zikrulla.production.quranapp.util.Constants.DATA_URL
 import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
-import zikrulla.production.quranapp.util.Constants.PREF_LAST_READ_SURAH_ID
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
-import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 
@@ -74,6 +69,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
     private var playing: Boolean? = null
     private var lastVisibleItemPosition: Int? = null
     private var mBound = false
+    private var isUpdateMediaPlayer = false
 
 
     override fun onCreateView(
@@ -104,18 +100,22 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                     ITEM_SURAH_INFO,
                     surahEntity!!
                 )
-            )
-        ) { ayah, position, _playing ->
-            var change = false
-            if (lastItem?.lastAudio != null)
-                change = lastItem?.lastAudio != ayah.ayahUzArEntity.number
-            if (change)
-                adapter.updateItem(lastItem?.lastPosition, false)
-            lastItem = LastItem(ayah.ayahUzArEntity.number, ayah.ayahUzArEntity.numberInSurah)
-            viewModel.setLastItem(lastItem!!)
-            player(lastItem, change)
-            adapter.updateItem(position, !(_playing ?: false))
-        }
+            ), { ayah, position, playing ->
+                var change = false
+                if (lastItem?.lastAudio != null)
+                    change = lastItem?.lastAudio != ayah.ayahUzArEntity.number
+                if (change)
+                    adapter.updateItem(lastItem?.lastPosition, false)
+                lastItem = LastItem(ayah.ayahUzArEntity.number, ayah.ayahUzArEntity.numberInSurah)
+                viewModel.setLastItem(lastItem!!)
+                player(lastItem, change)
+                adapter.updateItem(position, !(playing ?: false))
+            }, { ayah: AyahItem ->
+                viewModel.saveLastRead(ayah.ayahUzArEntity.number, !ayah.ayahUzArEntity.favourite)
+            }, { ayah: AyahItem ->
+                shareItem(ayah.ayahUzArEntity, surahEntity!!)
+            }
+        )
 
         val layoutManager = LinearLayoutManager(requireContext())
         binding.apply {
@@ -187,7 +187,8 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                         )
                     })
                     adapter.submitList(items)
-                    binding.recyclerView.scrollToPosition(surahEntity?.lastReadAyah ?: 0)
+                    viewModel.setLastReadIsUpdate()
+                    updateMediaPlayer()
                     swipeVisible(false)
                 }
             }
@@ -212,16 +213,20 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
             lastItem = it
             binding.mediaTitle.text = "${surahEntity?.englishName} Ayah ${lastItem?.lastPosition}"
         }.launchIn(viewLifecycleOwner.lifecycleScope)
+
+        viewModel.stateLastReadIsUpdate.onEach {
+            scrollToPosition()
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
-    private fun player(_lastItem: LastItem?, change: Boolean) {
+    private fun player(lastItem: LastItem?, change: Boolean) {
         binding.player.isVisible = true
         if (mBound) {
             if (change) {
                 audioService?.releaseMediaPlayer()
                 audioService?.createMediaPlayer(
                     Audios.getAyah(
-                        _lastItem?.lastAudio ?: 0,
+                        lastItem?.lastAudio ?: 0,
                         Edition.ALAFASY
                     )
                 )
@@ -233,10 +238,10 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                 }
             }
             playing = audioService?.isPlaying()
-            adapter.updateItem(_lastItem?.lastPosition, playing)
+            adapter.updateItem(lastItem?.lastPosition, playing)
         } else {
-            setService(true, _lastItem?.lastAudio)
-            adapter.updateItem(_lastItem?.lastPosition, true)
+            setService(true, lastItem?.lastAudio)
+            adapter.updateItem(lastItem?.lastPosition, true)
         }
     }
 
@@ -252,6 +257,8 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         } else {
             audioService?.onStop()
             handler.removeCallbacks(runnable)
+            if (playing != null)
+                adapter.updateItem(lastItem?.lastPosition, playing)
         }
     }
 
@@ -264,6 +271,26 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         binding.swipe.isRefreshing = isVisibility
     }
 
+    private fun scrollToPosition() {
+        binding.recyclerView.scrollToPosition(surahEntity?.lastReadAyah ?: 0)
+    }
+
+    private fun shareItem(ayah: AyahUzArEntity, surah: SurahEntity) {
+        val ayahResString = getString(R.string.ayah).lowercase()
+        val text =
+            "${surah.name} (${surah.englishName} $ayahResString ${ayah.numberInSurah})\n\n${ayah.textAr}\n\n${ayah.textUz}"
+        val intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text)
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(intent, null))
+    }
+
+    private fun updateMediaPlayer() {
+        isUpdateMediaPlayer = true
+    }
+
     private fun updateMediaPlayer(duration: Int, currentPosition: Int?, playing: Boolean?) {
         val icon = if (playing == false) R.drawable.ic_play else R.drawable.ic_pause
 
@@ -271,6 +298,11 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
             seekBar.max = duration
             seekBar.progress = currentPosition ?: 0
             play.setImageResource(icon)
+        }
+
+        if (isUpdateMediaPlayer && playing == true) {
+            adapter.updateItem(lastItem?.lastPosition, playing)
+            isUpdateMediaPlayer = false
         }
 
     }
@@ -317,6 +349,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
             Log.d(TAG, "run: $currentPosition")
 
             updateMediaPlayer(duration, currentPosition, playing)
+
             handler.postDelayed(this, 1000)
         }
     }

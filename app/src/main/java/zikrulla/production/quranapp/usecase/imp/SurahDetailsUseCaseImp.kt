@@ -27,6 +27,10 @@ class SurahDetailsUseCaseImp @Inject constructor(
         repository.updateSurah(surahId, visibleItemPosition)
     }
 
+    override suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean) {
+        repository.updateIsFavourite(ayahId, isFavourite)
+    }
+
     override fun saveLastRead(surahId: Int) {
         repository.saveLastReadShP(surahId)
     }

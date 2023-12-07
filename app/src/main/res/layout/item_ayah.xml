@@ -39,8 +39,9 @@
 
         <ImageView
             android:id="@+id/save"
-            android:layout_width="@dimen/_24sdp"
-            android:layout_height="@dimen/_24sdp"
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:padding="@dimen/_5sdp"
             android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_save"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -50,9 +51,9 @@
 
         <ImageView
             android:id="@+id/play"
-            android:layout_width="@dimen/_24sdp"
-            android:layout_height="@dimen/_24sdp"
-            android:layout_margin="@dimen/_5sdp"
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:padding="@dimen/_5sdp"
             android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_play"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -63,9 +64,9 @@
 
         <ImageView
             android:id="@+id/share"
-            android:layout_width="@dimen/_24sdp"
-            android:layout_height="@dimen/_24sdp"
-            android:layout_margin="@dimen/_5sdp"
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:padding="@dimen/_5sdp"
             android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_share"
             app:layout_constraintBottom_toBottomOf="parent"
