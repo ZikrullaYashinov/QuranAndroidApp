@@ -86,7 +86,6 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         load()
         click()
         observe()
-
     }
 
     @SuppressLint("ClickableViewAccessibility")
