@@ -2,6 +2,7 @@ package zikrulla.production.quranapp.usecase.imp
 
 import kotlinx.coroutines.flow.Flow
 import zikrulla.production.quranapp.data.local.entity.AyahUzArEntity
+import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.data.remote.response.Surah
 import zikrulla.production.quranapp.repository.QuranRepository
@@ -24,11 +25,15 @@ class SurahDetailsUseCaseImp @Inject constructor(
     }
 
     override suspend fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?) {
-        repository.updateSurah(surahId, visibleItemPosition)
+        repository.updateLastReadAyah(surahId, visibleItemPosition)
     }
 
     override suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean) {
         repository.updateIsFavourite(ayahId, isFavourite)
+    }
+
+    override suspend fun updateSurah(surahEntity: SurahEntity) {
+        repository.updateSurah(surahEntity)
     }
 
     override fun saveLastRead(surahId: Int) {

@@ -18,6 +18,9 @@ interface SurahDao {
     fun getSurah(): Flow<List<SurahEntity>>
 
     @Query("UPDATE surah SET lastReadAyah = :visibleItemPosition WHERE number = :surahId")
-    suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?)
+    suspend fun updateLastReadAyah(surahId: Int, visibleItemPosition: Int?)
+
+    @Update
+    suspend fun updateSurah(surahEntity: SurahEntity)
 
 }

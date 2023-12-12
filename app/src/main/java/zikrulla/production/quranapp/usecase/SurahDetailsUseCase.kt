@@ -2,6 +2,7 @@ package zikrulla.production.quranapp.usecase
 
 import kotlinx.coroutines.flow.Flow
 import zikrulla.production.quranapp.data.local.entity.AyahUzArEntity
+import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.data.remote.response.Surah
 
@@ -11,5 +12,6 @@ interface SurahDetailsUseCase {
     suspend fun insertSurah(list: List<AyahUzArEntity>)
     suspend fun saveVisibleItemPosition(surahId: Int, visibleItemPosition: Int?)
     suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean)
+    suspend fun updateSurah(surahEntity: SurahEntity)
     fun saveLastRead(surahId: Int)
 }

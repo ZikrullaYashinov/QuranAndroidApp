@@ -34,14 +34,29 @@
 
                 <TextView
                     android:id="@+id/app_name"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:layout_marginStart="@dimen/_10sdp"
+                    android:layout_marginEnd="@dimen/_10sdp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="@string/app_name"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_16sdp"
                     android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/play_surah"
+                    android:layout_width="@dimen/_34sdp"
+                    android:layout_height="@dimen/_34sdp"
+                    android:padding="@dimen/_5sdp"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:src="@drawable/ic_play"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/save"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.5"
+                    app:tint="@color/primary" />
             </LinearLayout>
 
             <View

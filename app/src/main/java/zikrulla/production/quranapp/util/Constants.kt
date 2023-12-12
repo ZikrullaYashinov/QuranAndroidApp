@@ -9,6 +9,7 @@ object Constants {
     const val TAG = "@@@@"
 
     const val DATA_URL = "url"
+    const val DATA_URI = "uri"
 
     const val STATE_CREATED = "created"
 

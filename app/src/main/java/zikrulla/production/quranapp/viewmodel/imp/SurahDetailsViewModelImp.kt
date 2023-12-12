@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import zikrulla.production.quranapp.data.local.entity.AyahUzArEntity
+import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.AyahUzAr
 import zikrulla.production.quranapp.data.model.LastItem
 import zikrulla.production.quranapp.data.model.Resource
@@ -81,11 +82,15 @@ class SurahDetailsViewModelImp @Inject constructor(
         }
     }
 
-    fun saveLastRead(surahId: Int) {
+    fun updateIsFavourite(surahId: Int) {
         surahDetailsUseCase.saveLastRead(surahId)
     }
 
-    fun saveLastRead(ayahId: Int, isFavourite: Boolean) {
+    suspend fun updateSurah(surahEntity: SurahEntity) {
+        surahDetailsUseCase.updateSurah(surahEntity)
+    }
+
+    fun updateIsFavourite(ayahId: Int, isFavourite: Boolean) {
         viewModelScope.launch {
             surahDetailsUseCase.updateIsFavourite(ayahId, isFavourite)
         }

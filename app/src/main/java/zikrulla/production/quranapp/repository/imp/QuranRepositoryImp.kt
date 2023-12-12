@@ -56,12 +56,16 @@ class QuranRepositoryImp @Inject constructor(
         appDatabase.surahDao().insertAll(list)
     }
 
-    override suspend fun updateSurah(surahId: Int, visibleItemPosition: Int?) {
-        appDatabase.surahDao().updateSurah(surahId, visibleItemPosition)
+    override suspend fun updateLastReadAyah(surahId: Int, visibleItemPosition: Int?) {
+        appDatabase.surahDao().updateLastReadAyah(surahId, visibleItemPosition)
     }
 
     override suspend fun updateIsFavourite(ayahId: Int, isFavourite: Boolean) {
         appDatabase.ayahUzArDao().updateIsFavourite(ayahId, isFavourite)
+    }
+
+    override suspend fun updateSurah(surahEntity: SurahEntity) {
+        appDatabase.surahDao().updateSurah(surahEntity)
     }
 
     override fun getLastReadShP(): Int? {

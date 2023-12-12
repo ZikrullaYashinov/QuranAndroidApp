@@ -3,9 +3,13 @@ package zikrulla.production.quranapp.service
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
+import zikrulla.production.quranapp.util.Constants.DATA_URI
 import zikrulla.production.quranapp.util.Constants.DATA_URL
 import zikrulla.production.quranapp.util.Constants.TAG
 import java.util.concurrent.TimeUnit
@@ -13,6 +17,7 @@ import java.util.concurrent.TimeUnit
 class AudioService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var url: String? = null
+    private var uri: Uri? = null
     private val binder: IBinder = LocalBinder()
     private var duration: String? = null
     private var durationLength = 0
@@ -23,17 +28,34 @@ class AudioService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: ")
         url = intent?.getStringExtra(DATA_URL)
-        createMediaPlayer(url)
+
+        if (url != null)
+            createMediaPlayer(url = url)
+        else{
+            val uriString = intent?.getStringExtra(DATA_URI)
+            uri = Uri.parse(uriString)
+            uri?.let {
+                createMediaPlayer(uri = uri)
+            }
+        }
         return START_STICKY
     }
 
-    fun createMediaPlayer(url: String?) {
-        Log.d(TAG, "createMediaPlayer: $url")
+    fun createMediaPlayer(url: String? = null, uri: Uri? = null) {
         mediaPlayer = MediaPlayer()
-        mediaPlayer?.setDataSource(url)
+        if (url != null) {
+            Log.d(TAG, "createMediaPlayer: $url")
+            mediaPlayer?.setDataSource(url)
+            mediaPlayer?.prepareAsync()
+        } else if (uri != null) {
+            Log.d(TAG, "createMediaPlayer: $uri")
+            mediaPlayer?.setDataSource(this, uri)
+            mediaPlayer?.prepare()
+        }
         mediaPlayer?.setOnPreparedListener {
             it.start()
             Log.d(TAG, "createMediaPlayer: start")
@@ -53,7 +75,6 @@ class AudioService : Service() {
             releaseMediaPlayer()
             stopSelf()
         }
-        mediaPlayer?.prepareAsync()
     }
 
     fun releaseMediaPlayer() {
@@ -63,7 +84,7 @@ class AudioService : Service() {
         }
     }
 
-    fun onStop(){
+    fun onStop() {
         releaseMediaPlayer()
         stopSelf()
     }

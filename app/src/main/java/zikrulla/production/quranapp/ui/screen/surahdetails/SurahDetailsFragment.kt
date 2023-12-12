@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -15,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -27,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import zikrulla.production.quranapp.R
 import zikrulla.production.quranapp.data.local.entity.AyahUzArEntity
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
@@ -39,12 +42,16 @@ import zikrulla.production.quranapp.service.AudioService
 import zikrulla.production.quranapp.ui.adapter.AyahAdapter
 import zikrulla.production.quranapp.util.Audios
 import zikrulla.production.quranapp.util.Constants.ARG_SURAH_NAME
+import zikrulla.production.quranapp.util.Constants.DATA_URI
 import zikrulla.production.quranapp.util.Constants.DATA_URL
 import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
+import java.io.IOException
+import java.io.InputStream
+import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
 
@@ -71,6 +78,11 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
     private var mBound = false
     private var isUpdateMediaPlayer = false
 
+    // Create intent to launch file picker
+    private val REQUEST_SAF_CODE = 101
+    private var uri: Uri? = null
+//    private var uri: Uri? = Uri.parse("content://com.android.providers.downloads.documents/document/37")
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,6 +99,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         click()
         observe()
     }
+
 
     @SuppressLint("ClickableViewAccessibility")
     private fun load() {
@@ -110,7 +123,10 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                 player(lastItem, change)
                 adapter.updateItem(position, !(playing ?: false))
             }, { ayah: AyahItem ->
-                viewModel.saveLastRead(ayah.ayahUzArEntity.number, !ayah.ayahUzArEntity.favourite)
+                viewModel.updateIsFavourite(
+                    ayah.ayahUzArEntity.number,
+                    !ayah.ayahUzArEntity.favourite
+                )
             }, { ayah: AyahItem ->
                 shareItem(ayah.ayahUzArEntity, surahEntity!!)
             }
@@ -129,6 +145,83 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         })
     }
 
+    private fun selectAudioUri() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "audio/*" // Set type to "audio/*" for sound files
+            putExtra(
+                Intent.EXTRA_TITLE,
+                "${surahEntity?.englishName} ${Edition.ALAFASY}.mp3"
+            ) // Set file name
+        }
+        getContent.launch(intent)
+    }
+
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d(TAG, "selectAudioUri: ${result.data?.data}")
+            uri = result.data?.data ?: return@registerForActivityResult
+
+            launch {
+                downloadAudioFromUrl(
+                    Audios.getSurah(surahEntity?.number ?: 0, Edition.ALAFASY),
+                    uri!!
+                )
+                surahEntity?.let {
+                    it.downloadedUri = uri.toString()
+                    viewModel.updateSurah(it)
+                }
+            }
+        }
+
+    private fun downloadAudioFromUrl(urlString: String, uri: Uri) {
+
+        // Get content resolver
+        val contentResolver = requireContext().contentResolver
+
+        // Open URL connection
+        val url = URL(urlString)
+        val urlConnection = url.openConnection()
+
+        // Get content length for progress tracking
+        val contentLength = urlConnection.contentLength
+
+        // Open input stream for URL
+        val inputStream = urlConnection.getInputStream()
+
+        // Open output stream for the chosen location
+        val outputStream = contentResolver.openOutputStream(uri) ?: return
+
+        // Buffer size for efficient data transfer
+        val buffer = ByteArray(1024)
+
+        // Download progress variable
+        var downloadedBytes = 0
+
+        // Read data from URL
+        var bytesRead: Int = inputStream.read(buffer)
+
+        // Write data to chosen location and update progress
+        while (bytesRead != -1) {
+            outputStream.write(buffer, 0, bytesRead)
+            downloadedBytes += bytesRead
+
+            // Update progress bar or text
+            val progress = (downloadedBytes * 100f / contentLength).toLong()
+            // Update progress UI according to your implementation
+            Log.d(TAG, "downloadAudioFromUrl: $progress")
+
+            bytesRead = inputStream.read(buffer)
+        }
+
+        // Close streams
+        outputStream.close()
+        inputStream.close()
+
+        // Show download completion message
+//        Toast.makeText(context, "Audio downloaded successfully!", Toast.LENGTH_SHORT).show()
+    }
+
     private fun click() {
         binding.apply {
             back.setOnClickListener {
@@ -141,6 +234,32 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
             }
             play.setOnClickListener {
                 player(lastItem, false)
+            }
+            playSurah.setOnClickListener {
+                player(lastItem, true, isSurah = true)
+//                if (uri == null) {
+//                    surahEntity?.downloadedUri?.let {
+//                        Log.d(TAG, "click: $it")
+//                        uri = Uri.parse(it)
+//                    }
+//                }
+//
+//                Log.d(TAG, "uri: ${uri.toString()}")
+//                Log.d(TAG, "surah: ${surahEntity?.downloadedUri.toString()}")
+//
+//                if (uri == null) {
+//                    Log.d(TAG, "click uri null: ${uri.toString()}")
+//                    selectAudioUri()
+//                } else {
+//                    try {
+//                        val hasAudio = hasAudio(requireContext(), uri!!)
+//                        Log.d(TAG, "click: $hasAudio")
+//                        player(lastItem, true, isSurah = true)
+//                    } catch (e: Exception) {
+//                        Log.d(TAG, "click: ${e.message}")
+//                        selectAudioUri()
+//                    }
+//                }
             }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(
@@ -161,6 +280,24 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                 setService(false)
             }
         }
+    }
+
+    private fun hasAudio(context: Context, uri: Uri): Boolean {
+        var inputStream: InputStream? = null
+        return try {
+            // Open an InputStream using the ContentResolver
+            inputStream = context.contentResolver.openInputStream(uri)
+
+            // Check if the InputStream is not null, indicating that the resource is available
+            inputStream != null
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        } finally {
+            // Close the InputStream to release resources
+            inputStream?.close()
+        }
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -218,17 +355,25 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
-    private fun player(lastItem: LastItem?, change: Boolean) {
+    private fun player(lastItem: LastItem?, change: Boolean, isSurah: Boolean = false) {
         binding.player.isVisible = true
+        val url =
+            if (isSurah) {
+                Audios.getSurah(surahEntity?.number!!, Edition.ALAFASY)
+            } else {
+                Audios.getAyah(lastItem?.lastAudio ?: 0, Edition.ALAFASY)
+            }
         if (mBound) {
             if (change) {
                 audioService?.releaseMediaPlayer()
-                audioService?.createMediaPlayer(
-                    Audios.getAyah(
-                        lastItem?.lastAudio ?: 0,
-                        Edition.ALAFASY
+                if (isSurah)
+                    audioService?.createMediaPlayer(
+                        uri = uri
                     )
-                )
+                else
+                    audioService?.createMediaPlayer(
+                        url = url
+                    )
             } else {
                 if (playing == true) {
                     audioService?.pause()
@@ -236,21 +381,31 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                     audioService?.resume()
                 }
             }
-            playing = audioService?.isPlaying()
-            adapter.updateItem(lastItem?.lastPosition, playing)
+            if (!isSurah) {
+                playing = audioService?.isPlaying()
+                adapter.updateItem(lastItem?.lastPosition, playing)
+            }
         } else {
-            setService(true, lastItem?.lastAudio)
+            setService(true, url, isSurah)
             adapter.updateItem(lastItem?.lastPosition, true)
         }
     }
 
-    private fun setService(isStart: Boolean = true, number: Int? = null) {
+    private fun setService(
+        isStart: Boolean = true,
+        urlString: String? = null,
+        isSurah: Boolean = false
+    ) {
         if (isStart) {
             intent = Intent(requireActivity(), AudioService::class.java)
-            intent?.putExtra(
-                DATA_URL,
-                Audios.getAyah(number!!, Edition.ALAFASY)
-            )
+//            if (isSurah) {
+//                Log.d(TAG, "setService: $uri")
+//                intent?.putExtra(
+//                    DATA_URI,
+//                    uri.toString()
+//                )
+//            } else
+            intent?.putExtra(DATA_URL, urlString)
             requireActivity().startService(intent)
             requireActivity().bindService(intent!!, connection, Context.BIND_EXTERNAL_SERVICE)
         } else {
@@ -263,7 +418,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
 
     private fun saveLastRead() {
         viewModel.saveVisibleItemPosition(surahEntity?.number!!, lastVisibleItemPosition)
-        viewModel.saveLastRead(surahEntity?.number!!)
+        viewModel.updateIsFavourite(surahEntity?.number!!)
     }
 
     private fun swipeVisible(isVisibility: Boolean) {
@@ -285,6 +440,7 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         }
         startActivity(Intent.createChooser(intent, null))
     }
+
 
     private fun updateMediaPlayer() {
         isUpdateMediaPlayer = true
