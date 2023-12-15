@@ -18,16 +18,16 @@
             android:layout_height="wrap_content"
             android:gravity="center">
 
-            <ImageView
-                android:id="@+id/back"
-                android:layout_width="@dimen/_20sdp"
-                android:layout_height="@dimen/_20sdp"
-                android:layout_marginStart="@dimen/_10sdp"
-                android:foreground="?attr/selectableItemBackground"
-                android:padding="@dimen/_2sdp"
-                android:src="@drawable/ic_menu"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+<!--            <ImageView-->
+<!--                android:id="@+id/back"-->
+<!--                android:layout_width="@dimen/_20sdp"-->
+<!--                android:layout_height="@dimen/_20sdp"-->
+<!--                android:layout_marginStart="@dimen/_10sdp"-->
+<!--                android:foreground="?attr/selectableItemBackground"-->
+<!--                android:padding="@dimen/_2sdp"-->
+<!--                android:src="@drawable/ic_menu"-->
+<!--                app:layout_constraintLeft_toLeftOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent" />-->
 
             <TextView
                 android:id="@+id/app_name"
@@ -49,6 +49,42 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/not_internet_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/not_internet_view_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:fontFamily="@font/poppins_medium"
+            android:gravity="center"
+            android:padding="@dimen/_8sdp"
+            android:text="@string/please_check_the_internet_connection"
+            android:textColor="@color/light_primary"
+            android:textSize="@dimen/_14sdp" />
+
+        <ImageView
+            android:id="@+id/not_internet_view_refresh"
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:foreground="?attr/selectableItemBackground"
+            android:padding="@dimen/_5sdp"
+            android:src="@drawable/ic_refresh"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/save"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            app:tint="@color/primary" />
+
+    </LinearLayout>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -59,9 +95,9 @@
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
-                android:visibility="gone"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
@@ -70,7 +106,6 @@
                 android:padding="@dimen/_5sdp"
                 tools:listitem="@layout/item_surah" />
         </LinearLayout>
-    </LinearLayout>
-
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>

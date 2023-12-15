@@ -17,16 +17,18 @@ import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.service.AudioService
 import zikrulla.production.quranapp.usecase.SurahDetailsUseCase
 import zikrulla.production.quranapp.util.Constants.TAG
+import zikrulla.production.quranapp.util.NetworkHelper
 import zikrulla.production.quranapp.viewmodel.SurahDetailsViewModel
 import javax.inject.Inject
 
 @SuppressLint("StaticFieldLeak")
 @HiltViewModel
 class SurahDetailsViewModelImp @Inject constructor(
-    private val surahDetailsUseCase: SurahDetailsUseCase
+    private val surahDetailsUseCase: SurahDetailsUseCase,
+    private val networkHelper: NetworkHelper
 ) : ViewModel(), SurahDetailsViewModel {
 
-    private val _stateAyahUzAr = MutableStateFlow<Resource<List<AyahUzArEntity>>>(Resource.Loading)
+    private val _stateAyahUzAr = MutableStateFlow<SurahDetailsResource<List<AyahUzArEntity>>>(SurahDetailsResource.Loading)
     val stateAyahUzAr get() = _stateAyahUzAr.asStateFlow()
 
     private val _stateService = MutableStateFlow<AudioService?>(null)
@@ -42,9 +44,14 @@ class SurahDetailsViewModelImp @Inject constructor(
     override fun fetchSurah(id: Int) {
         surahDetailsUseCase.getSurahDB(id).onEach {
             if (it.isNotEmpty())
-                _stateAyahUzAr.value = Resource.Success(it)
-            else
-                fetchSurahApi(id)
+                _stateAyahUzAr.value = SurahDetailsResource.Success(it)
+            else {
+                if (networkHelper.isNetworkConnected()) {
+                    fetchSurahApi(id)
+                } else {
+                    _stateAyahUzAr.value = SurahDetailsResource.NotInternet
+                }
+            }
         }.launchIn(viewModelScope)
     }
 
@@ -52,11 +59,11 @@ class SurahDetailsViewModelImp @Inject constructor(
         surahDetailsUseCase.getSurah(id).onEach {
             when (it) {
                 is Resource.Error -> {
-                    _stateAyahUzAr.value = Resource.Error(it.e)
+                    _stateAyahUzAr.value = SurahDetailsResource.Error(it.e)
                 }
 
                 is Resource.Loading -> {
-                    _stateAyahUzAr.value = Resource.Loading
+                    _stateAyahUzAr.value = SurahDetailsResource.Loading
                 }
 
                 is Resource.Success -> {
@@ -107,4 +114,10 @@ class SurahDetailsViewModelImp @Inject constructor(
     fun setLastItem(lastItem: LastItem) {
         _stateLastItem.value = lastItem
     }
+}
+sealed class SurahDetailsResource<out T> {
+    object Loading : SurahDetailsResource<Nothing>()
+    object NotInternet : SurahDetailsResource<Nothing>()
+    class Success<T : Any>(val data: T) : SurahDetailsResource<T>()
+    class Error(val e: Throwable) : SurahDetailsResource<Nothing>()
 }

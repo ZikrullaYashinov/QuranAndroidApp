@@ -33,7 +33,6 @@ import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.AyahItem
 import zikrulla.production.quranapp.data.model.LastItem
 import zikrulla.production.quranapp.data.model.MultiTypeItem
-import zikrulla.production.quranapp.data.model.Resource
 import zikrulla.production.quranapp.databinding.FragmentSurahDetaailsBinding
 import zikrulla.production.quranapp.service.AudioService
 import zikrulla.production.quranapp.ui.adapter.AyahAdapter
@@ -44,6 +43,7 @@ import zikrulla.production.quranapp.util.Constants.ITEM_AYAH
 import zikrulla.production.quranapp.util.Constants.ITEM_SURAH_INFO
 import zikrulla.production.quranapp.util.Constants.TAG
 import zikrulla.production.quranapp.util.Edition
+import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsResource
 import zikrulla.production.quranapp.viewmodel.imp.SurahDetailsViewModelImp
 import kotlin.coroutines.CoroutineContext
 
@@ -137,7 +137,10 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
                 saveLastRead()
             }
             swipe.setOnRefreshListener {
-                viewModel.fetchSurah(surahEntity?.number ?: 1)
+                refreshSwipe()
+            }
+            notInternetViewRefresh.setOnClickListener {
+                refreshSwipe()
             }
             play.setOnClickListener {
                 player(lastItem, false)
@@ -167,17 +170,25 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
     private fun observe() {
         viewModel.stateAyahUzAr.onEach { resource ->
             when (resource) {
-                is Resource.Error -> {
+                is SurahDetailsResource.Error -> {
                     Log.d(TAG, "observe: Error ${resource.e}")
                     swipeVisible(false)
                 }
 
-                is Resource.Loading -> {
+                is SurahDetailsResource.Loading -> {
                     Log.d(TAG, "observe: Loading")
+                    setNotInternetView(false)
                     swipeVisible(true)
                 }
 
-                is Resource.Success -> {
+                is SurahDetailsResource.NotInternet -> {
+                    setNotInternetView(true)
+                    swipeVisible(false)
+                }
+
+                is SurahDetailsResource.Success -> {
+                    setNotInternetView(false)
+                    swipeVisible(false)
                     val items = arrayListOf(MultiTypeItem(ITEM_SURAH_INFO, surahEntity!!))
                     items.addAll(resource.data.map {
                         MultiTypeItem(
@@ -216,6 +227,14 @@ class SurahDetailsFragment : Fragment(), CoroutineScope {
         viewModel.stateLastReadIsUpdate.onEach {
             scrollToPosition()
         }.launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun setNotInternetView(isVisible: Boolean) {
+        binding.notInternetView.isVisible = isVisible
+    }
+
+    private fun refreshSwipe() {
+        viewModel.fetchSurah(surahEntity?.number ?: 1)
     }
 
     private fun player(lastItem: LastItem?, change: Boolean) {

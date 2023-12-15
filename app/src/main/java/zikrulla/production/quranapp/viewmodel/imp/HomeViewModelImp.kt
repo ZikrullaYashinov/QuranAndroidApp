@@ -1,41 +1,64 @@
 package zikrulla.production.quranapp.viewmodel.imp
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import zikrulla.production.quranapp.data.local.entity.SurahEntity
 import zikrulla.production.quranapp.data.model.Resource
+import zikrulla.production.quranapp.receiver.InternetReceiver
 import zikrulla.production.quranapp.usecase.HomeUseCase
+import zikrulla.production.quranapp.util.Constants.TAG
+import zikrulla.production.quranapp.util.NetworkHelper
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModelImp @Inject constructor(
     private val homeUseCase: HomeUseCase,
+    private val networkHelper: NetworkHelper
 ) : ViewModel() {
 
     private val _stateSurahNameList =
-        MutableStateFlow<Resource<List<SurahEntity>>>(Resource.Loading)
+        MutableStateFlow<HomeResource<List<SurahEntity>>>(HomeResource.Loading)
 
     fun getSurahNameList() = _stateSurahNameList.asStateFlow()
 
 
-    init {
-        fetchSurahListNameDB()
-    }
+    fun fetchSurahListNameDB() {
+        viewModelScope.launch {
+            _stateSurahNameList.value = HomeResource.Loading
+            homeUseCase.getSurahListNameDB()
+                .catch {
+                    _stateSurahNameList.emit(HomeResource.Error(it))
+                }
+                .collect {
+                    if (it.isNotEmpty())
+                        _stateSurahNameList.emit(HomeResource.Success(it))
+                    else {
+                        if (networkHelper.isNetworkConnected())
+                            fetchSurahListName()
+                        else
+                            _stateSurahNameList.value = HomeResource.NotInternet
+                    }
+                }
+        }
 
-    private fun fetchSurahListNameDB() {
-        _stateSurahNameList.value = Resource.Loading
-        homeUseCase.getSurahListNameDB()
-            .onEach {
-                if (it.isNotEmpty())
-                    _stateSurahNameList.emit(Resource.Success(it))
-                else
-                    fetchSurahListName()
-            }.launchIn(viewModelScope)
+
+//        homeUseCase.getSurahListNameDB()
+//            .onEach {
+//                if (it.isNotEmpty())
+//                    _stateSurahNameList.emit(Resource.Success(it))
+//                else
+//                    fetchSurahListName()
+//            }.launchIn(viewModelScope)
     }
 
     private fun fetchSurahListName() {
@@ -62,4 +85,11 @@ class HomeViewModelImp @Inject constructor(
         return homeUseCase.getLastRead()
     }
 
+}
+
+sealed class HomeResource<out T> {
+    object Loading : HomeResource<Nothing>()
+    object NotInternet : HomeResource<Nothing>()
+    class Success<T : Any>(val data: T) : HomeResource<T>()
+    class Error(val e: Throwable) : HomeResource<Nothing>()
 }

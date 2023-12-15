@@ -9,4 +9,7 @@
     <string name="ayah_number">Ayah number: </string>
     <string name="ayah">Ayah</string>
     <string name="al_fatiah">Al-Fatiah</string>
+    <string name="internet_connected">Internet connected</string>
+    <string name="internet_disconnected">Internet disconnected</string>
+    <string name="please_check_the_internet_connection">Please check the internet connection</string>
 </resources>
