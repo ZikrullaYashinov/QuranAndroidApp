@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "30848550730",
+    "project_id": "quranapp-b41ff",
+    "storage_bucket": "quranapp-b41ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30848550730:android:3eeb5eb6f0982eba57e3b3",
+        "android_client_info": {
+          "package_name": "zikrulla.production.quranapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6e3HIpY3txyOue2_Dd8FXHlYC__EAenE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
