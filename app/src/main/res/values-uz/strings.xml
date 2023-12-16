@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Qurʼon App</string>
+    <string name="audio_quran">Audio Qurʼon</string>
+    <string name="quran">Qurʼon</string>
+    <string name="learn_quran_and_recite_once_everyday">Qur\'on o\'rganing va har kuni bir marta tilovat qiling</string>
+    <string name="get_started">Boshlash</string>
+    <string name="last_read">Oxirgi o\'qish</string>
+    <string name="ayah_number">Oyat raqami: </string>
+    <string name="ayah">Oyat</string>
+    <string name="al_fatiah">Al-Fatiah</string>
+    <string name="internet_connected">Internetga ulangan</string>
+    <string name="internet_disconnected">Internet uzilgan</string>
+    <string name="please_check_the_internet_connection">Internetga ulanishni tekshiring</string>
+</resources>

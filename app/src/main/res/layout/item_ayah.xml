@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_5sdp"
-        android:background="@drawable/bg_ayah_layout"
+        style="@style/background2"
         android:padding="@dimen/_5sdp">
 
         <ImageView
@@ -87,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins_medium"
-            android:textColor="@color/dark_primary"
+            style="@style/text_4"
             android:textSize="@dimen/_16sdp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -101,7 +101,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_5sdp"
             android:fontFamily="@font/poppins_medium"
-            android:textColor="@color/dark_primary"
+            style="@style/text_secondary"
             android:textSize="@dimen/_12sdp"
             android:textStyle="bold"
             app:layout_constraintLeft_toRightOf="@id/imageView"

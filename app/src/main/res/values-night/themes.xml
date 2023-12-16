@@ -3,7 +3,7 @@
     <style name="Theme.QuranApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/dark_primary</item>
-        <item name="colorPrimaryVariant">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/background_dark</item>
         <item name="colorOnPrimary">@color/primary</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/light_primary</item>

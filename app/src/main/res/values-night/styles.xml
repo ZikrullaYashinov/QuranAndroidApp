@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="primary">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="primaryVariant">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+    <style name="background">
+        <item name="android:background">@color/background_dark</item>
+    </style>
+
+    <style name="background2">
+        <item name="android:background">@drawable/bg_ayah_layout_dark</item>
+    </style>
+
+    <style name="cardView">
+        <item name="cardBackgroundColor">@color/text_dark</item>
+    </style>
+
+    <style name="text_primary">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_secondary">
+        <item name="android:textColor">@color/text4</item>
+    </style>
+
+    <style name="text_3">
+        <item name="android:textColor">@color/text3</item>
+    </style>
+
+    <style name="text_4">
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>
