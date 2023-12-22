@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class zikrulla.production.quranapp.data.model.BaseResponse
+-keep class zikrulla.production.quranapp.data.model.SurahName
+-keep class zikrulla.production.quranapp.data.remote.response.Surah
+-keep class zikrulla.production.quranapp.data.remote.response.Ayah
